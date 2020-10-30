@@ -115,8 +115,9 @@ class Graph:
         best_result = float("inf")
         pQueue = PriorityQueue()
         init_priority = sum(shortest_lens_of_edges)#self.heuristic_func(start, list(start), shortest_lens_of_edges)
+        #priorityQueue contains ( heuristic+length, path_so_far, shortest_lens_of_edges, distance_so_far)
         pQueue.put((init_priority, init_list, shortest_lens_of_edges, 0))
-        allowable_terminal_points = 500 # after reaching this number, alghoritm will return best result found to this point
+        allowable_terminal_points = 1500 # after reaching this number, alghoritm will return best result found to this point
         while allowable_terminal_points:
             tuple = pQueue.get()
             path = tuple[1]
@@ -124,9 +125,10 @@ class Graph:
             distance_so_far = tuple[3]
             current = path[-1]#
             unvisited_vertexes_indexes = list( set([i for i in range(len(self.__vertexes))]) - set(path) )
-            #print(str(current) + " "+ str(distance_so_far) + " " + str(path))
+
             if not unvisited_vertexes_indexes:
                 #print("##################################################################")
+                #print(str(current) + " "+ str(distance_so_far) + " " + str(path))
                 allowable_terminal_points-=1
                 distance_to_come_back = self.calcDistance( self.__vertexes[current], self.__vertexes[start])
                 distance_so_far += distance_to_come_back
@@ -135,6 +137,28 @@ class Graph:
                     best_result = distance_so_far
                     best_path_so_far = path.copy()
                 continue
+
+            list_of_best_expectations = list()
+            for index in unvisited_vertexes_indexes:
+                tmp_path = path.copy()
+                tmp_path.append(index)
+                distance = self.calcDistance( self.__vertexes[current], self.__vertexes[index])
+                tmp_shortest_distances_left = shortest_distances_left.copy()
+                if distance in tmp_shortest_distances_left:
+                    tmp_shortest_distances_left.remove(distance)
+                else:
+                    del tmp_shortest_distances_left[-1]
+                heuristic_value = sum(tmp_shortest_distances_left)
+                tmp_distance = distance_so_far + distance
+                priority = heuristic_value + tmp_distance
+                list_of_best_expectations.append( (priority, tmp_path, tmp_shortest_distances_left, tmp_distance) )
+
+            list_of_best_expectations.sort()
+            list_of_best_expectations = list_of_best_expectations[:3]
+            for tuple in list_of_best_expectations:
+                pQueue.put(tuple)
+
+            '''
             for i in range( min(4, len(unvisited_vertexes_indexes)) ):#ONLY FIVE in order to not achive complexity of (n!)
                 tmp_path = path.copy()
                 neighbour_index = unvisited_vertexes_indexes[i]
@@ -150,6 +174,7 @@ class Graph:
                 priority += distance
                 #print(priority)
                 pQueue.put( (priority, tmp_path, new_shortest_distances_left, distance))
+            '''
         return (best_path_so_far, best_result)
 
     def TSP_brute_force(self):
