@@ -114,10 +114,11 @@ class Graph:
         best_path_so_far = list()
         best_result = float("inf")
         pQueue = PriorityQueue()
-        init_priority = sum(shortest_lens_of_edges)#self.heuristic_func(start, list(start), shortest_lens_of_edges)
+        init_priority = sum(shortest_lens_of_edges)
         #priorityQueue contains ( heuristic+length, path_so_far, shortest_lens_of_edges, distance_so_far)
         pQueue.put((init_priority, init_list, shortest_lens_of_edges, 0))
-        allowable_terminal_points = 1500 # after reaching this number, alghoritm will return best result found to this point
+        #TODO: think of good function here
+        allowable_terminal_points = 100 # after reaching this number, alghoritm will return best result found to this point
         while allowable_terminal_points:
             tuple = pQueue.get()
             path = tuple[1]
@@ -127,8 +128,6 @@ class Graph:
             unvisited_vertexes_indexes = list( set([i for i in range(len(self.__vertexes))]) - set(path) )
 
             if not unvisited_vertexes_indexes:
-                #print("##################################################################")
-                #print(str(current) + " "+ str(distance_so_far) + " " + str(path))
                 allowable_terminal_points-=1
                 distance_to_come_back = self.calcDistance( self.__vertexes[current], self.__vertexes[start])
                 distance_so_far += distance_to_come_back
@@ -178,7 +177,23 @@ class Graph:
         return (best_path_so_far, best_result)
 
     def TSP_brute_force(self):
-        pass
+        start = 0
+        list_of_indexes = [i for i in range(1,len(self.__vertexes))]
+        best_path = list()
+        best_distance = float("inf")
+        permutations = itertools.permutations(list_of_indexes)
+        for path in permutations:
+            path = list(path)
+            path.insert(0, start)
+            path.append(start)
+            current_distance = 0
+            for i in range( len(path)-1 ):
+                current_distance += self.calcDistance( self.__vertexes[path[i]], self.__vertexes[path[i+1]])
+
+            if current_distance < best_distance:
+                best_distance = current_distance
+                best_path = path
+        return (best_path, best_distance)
 
     def calcDistance(self, src, dest):
         #   sqrt( (x1-x2)^2 + (y1-y2)^2 )
@@ -197,8 +212,9 @@ def main():
     graph = Graph()
     graph.loadDataFromFile("data.txt")
     graph.drawGraph()
-    print(graph.TSP_closest_first())
-    print(graph.TSP_A_star())
+    print("Brute force:\t"  + str( graph.TSP_brute_force() ))
+    print("Closest first:\t"+ str( graph.TSP_closest_first() ))
+    print("A_star:\t\t"     + str( graph.TSP_A_star() ))
 
 if __name__ == "__main__":
     main()
