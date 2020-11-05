@@ -5,6 +5,7 @@ D 1 1
 E 0 1
 F 1 2
 G 2 2
+H 10 2
 Edges:
 A B
 A E
@@ -17,3 +18,6 @@ D F
 E F
 D G
 F G
+C H
+D H
+G H

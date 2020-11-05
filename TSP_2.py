@@ -58,6 +58,7 @@ class Graph:
             return
         self.__adjencyList[edgeData[0]].append( edgeData[1] )
         self.__adjencyList[edgeData[1]].append( edgeData[0] )
+
     def getNodeFromID(self, id):
         for vertex in self.__vertexes:
             if vertex == self.Node(id, float("inf"), float("inf")):
@@ -122,9 +123,35 @@ class Graph:
                         best_tuple = tuple
 
         return best_tuple
-    def TSP_closest_first(self, start_id):
-        start = self.getNodeFromID(start_id)
+    def TSP_closest_first(self, start_id):#using stack, so if we cannot continues we go back
+        start_vertex = self.getNodeFromID(start_id)
         path = list()
+        whole_distance = 0
+        stack = list()
+        stack.append((start_id, path, whole_distance))
+        finished = False
+        while (stack) and (not finished):
+            tuple = stack.pop()
+            current_id = tuple[0]
+            path = tuple[1].copy()
+            whole_distance = tuple[2]
+            path.append(current_id)
+            current_vertex = self.getNodeFromID(current_id)
+            list_to_sort_neighbours = list()
+            for neighbour_id in self.__adjencyList[current_id]:
+                if neighbour_id in path:
+                    continue
+                neighbour_vertex = self.getNodeFromID(neighbour_id)
+                new_distance = self.calcDistance(current_vertex, neighbour_vertex)
+                list_to_sort_neighbours.append( (new_distance, neighbour_id) )
+            list_to_sort_neighbours.sort(reverse = True)
+            for neighbour_data in list_to_sort_neighbours:
+                stack.append( (neighbour_data[1], path, neighbour_data[0]+whole_distance) )
+            if len(path) == len(self.__vertexIDs):
+                if start_id in self.__adjencyList[current_id]:
+                    path.append(start_id)
+                    whole_distance += self.calcDistance(current_vertex, start_vertex)
+                    return (whole_distance, path)
     def TSP_A_star(self, start_id):
         start = self.getNodeFromID(start_id)
         path = list()
@@ -140,25 +167,28 @@ class Graph:
         for vertex in self.__vertexes:
             x_coords.append(vertex.getX())
             y_coords.append(vertex.getY())
-        #plt.plot(x_coords, y_coords, linestyle='')
         plt.scatter(x_coords, y_coords)
         plt.show()
 
-    def drawPath(self, path):
+    def drawPath(self, paths):
         x_coords = list()
         y_coords = list()
         for vertex in self.__vertexes:
             x_coords.append(vertex.getX())
             y_coords.append(vertex.getY())
-        path_x_coords = list()
-        path_y_coords = list()
-        for ID in path:
-            node = self.getNodeFromID(ID)
-            path_x_coords.append(node.getX())
-            path_y_coords.append(node.getY())
-        plt.plot(path_x_coords, path_y_coords)
+        for path_data in paths:
+            path_x_coords = list()
+            path_y_coords = list()
+            for ID in path_data[0]:
+                node = self.getNodeFromID(ID)
+                path_x_coords.append(node.getX())
+                path_y_coords.append(node.getY())
+            plt.plot(path_x_coords, path_y_coords, label = path_data[1])
+            plt.legend()
         plt.scatter(x_coords, y_coords)
         plt.show()
+
+        
     def printGraph(self):
         for node in self.__vertexes:
             print(node)
@@ -174,18 +204,14 @@ class Graph:
 def main():
     graph = Graph()
     graph.loadDataFromFile("data.txt")
-    #graph.printGraph()
-    #s1 = {"A", "B", "C"}
-    #s2 = {"B", "C", "D"}
-    #print(s1-s2)
-    dist_path_tuple = graph.TSP_brute_force("A")
-    print(dist_path_tuple)
-    graph.drawPath(dist_path_tuple[1])
+    dist_path_bruteForce = graph.TSP_brute_force("A")
+    dist_path_closestFirst = graph.TSP_closest_first("A")
+    print(dist_path_bruteForce)
+    print(dist_path_closestFirst)
+    paths = ((dist_path_bruteForce[1], "brute force"), (dist_path_closestFirst[1], "closest first"))
+    graph.drawPath(paths)
 
-    #graph.drawGraph()
-    #print("Brute force:\t"  + str( graph.TSP_brute_force() ))
-    #print("Closest first:\t"+ str( graph.TSP_closest_first() ))
-    #print("A_star:\t\t"     + str( graph.TSP_A_star() ))
+
 
 if __name__ == "__main__":
     main()
