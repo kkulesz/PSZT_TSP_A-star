@@ -176,13 +176,14 @@ class Graph:
         del shortest_edges
 
         pQueue = PriorityQueue()
+        #tuple = pQueue.get()
         path.append(start_id)
-        pQueue.put( (sum(shortest_distances_left), path, shortest_distances_left, 0))
+        distance_so_far = 0
+        pQueue.put( (sum(shortest_distances_left), path, shortest_distances_left, distance_so_far))
 
-        while pQueue:
-            #print(pQueue.qsize())
+        print(self.__adjencyList)
+        while not pQueue.empty():
             tuple = pQueue.get()
-            #print(tuple)
             path = tuple[1]
             shortest_distances_left = tuple[2]
             distance_so_far = tuple[3]
@@ -192,36 +193,38 @@ class Graph:
 
 
             unvisited_vertexes = self.__vertexIDs - set(path)
-            #print(unvisited_vertexes)
             if unvisited_vertexes:
                 for neighbour_id in self.__adjencyList[current_vertex_id]:
+
                     if neighbour_id in unvisited_vertexes:
-                        shortest_distances_left = shortest_distances_left.copy()
-                        path = path.copy()
-                        path.append(neighbour_id)
+                        print(current_vertex_id + " " + neighbour_id)
+                        tmp_shortest_distances_left = shortest_distances_left.copy()
+                        tmp_path = path.copy()
+                        tmp_path.append(neighbour_id)
                         neighbour_vertex = self.getNodeFromID(neighbour_id)
-                        distance = self.calcDistance(current_vertex, neighbour_vertex)
-                        if distance in shortest_distances_left:
-                            shortest_distances_left.remove(distance)
-                        elif shortest_distances_left:
+                        new_distance = self.calcDistance(current_vertex, neighbour_vertex)
+                        #print(distance)
+                        if new_distance in tmp_shortest_distances_left:
+                            shortest_distances_left.remove(new_distance)
+                        elif tmp_shortest_distances_left:
                             del shortest_distances_left[-1]
-                        heuristic_value = sum(shortest_distances_left)
-                        distance_so_far += distance
-                        priority = heuristic_value + distance_so_far
-                        new_tuple = (priority, path, shortest_distances_left, distance_so_far)
+                        heuristic_value = sum(tmp_shortest_distances_left)
+                        new_distance =distance_so_far + new_distance
+                        priority = heuristic_value + new_distance
+                        new_tuple = (priority, tmp_path, tmp_shortest_distances_left, new_distance)
                         pQueue.put( new_tuple )
             else:
                 first_vertex_id = path[0]
                 if first_vertex_id in self.__adjencyList[current_vertex_id]:
                     first_vertex = self.getNodeFromID(first_vertex_id)
-                    distance = self.calcDistance(current_vertex, first_vertex)
-                    distance_so_far += distance
+                    new_distance = self.calcDistance(current_vertex, first_vertex)
+                    distance_so_far += new_distance
                     path.append(first_vertex_id)
-                    #print(tuple)
                     return (distance_so_far ,path)
                 else:#we cannot come back, continue looking
-                    #print("lalla")
                     continue
+        print(current_vertex)
+        print(path)
         print("cos nie pyklo")
 
     #heuristic function, for each vertex we will count MST value
@@ -265,7 +268,7 @@ class Graph:
         for vertex in self.__vertexes:
             x_coords.append(vertex.getX())
             y_coords.append(vertex.getY())
-        i = 0
+        #i = 0
         for path_data in paths:
             plt.figure(path_data[1])
             path_x_coords = list()
@@ -277,7 +280,7 @@ class Graph:
             plt.plot(path_x_coords, path_y_coords, label = path_data[1])
             plt.legend()
             plt.scatter(x_coords, y_coords)
-            i +=1
+            #i +=1
 
         #plt.scatter(x_coords, y_coords)
         plt.show()

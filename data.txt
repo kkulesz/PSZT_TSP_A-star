@@ -1,16 +1,15 @@
 A 0 0
 B 4 0
-C 0 1
-D 3 1
-E 10 1
-F 3 3
+C 1 2
+D 2 2
+E 4 2
+F 4 10
 Edges:
 A B
 A C
 A D
 A E
 A F
-B C
 B D
 B E
 B F
