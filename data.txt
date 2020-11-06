@@ -1,23 +1,22 @@
 A 0 0
-B 1 0
-C 2 0
-D 1 1
-E 0 1
-F 1 2
-G 2 2
-H 10 2
+B 4 0
+C 0 1
+D 3 1
+E 10 1
+F 3 3
 Edges:
 A B
+A C
+A D
 A E
+A F
 B C
 B D
 B E
+B F
 C D
+C E
+C F
 D E
 D F
 E F
-D G
-F G
-C H
-D H
-G H
