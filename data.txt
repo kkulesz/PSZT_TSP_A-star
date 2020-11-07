@@ -4,18 +4,41 @@ C 1 2
 D 2 2
 E 4 2
 F 4 10
+G 1 5
+H 2 4
+I 7 15
+J -2 0
+K 6 -1
 Edges:
 A B
 A C
 A D
 A E
 A F
+A G
+A I
+A J
+A K
 B D
 B E
 B F
+B G
+B H
+B K
 C D
 C E
 C F
+C K
 D E
 D F
+D J
+D K
 E F
+E G
+E H
+E I
+F H
+F J
+I J
+I K
+J G
