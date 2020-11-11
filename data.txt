@@ -12,18 +12,14 @@ K 6 -1
 Edges:
 A B
 A C
-A D
 A E
-A F
 A G
 A I
 A J
 A K
 B D
-B E
 B F
 B G
-B H
 B K
 C D
 C E
@@ -31,10 +27,8 @@ C F
 C K
 D E
 D F
-D J
 D K
 E F
-E G
 E H
 E I
 F H

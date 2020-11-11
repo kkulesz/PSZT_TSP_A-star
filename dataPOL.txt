@@ -1,0 +1,31 @@
+Warszawa 0 0
+Bialystok 4 3
+Gdansk -7 6
+Bydgoszcz -8 3
+Kolobrzeg -13 6
+Szczecin -16 4
+Lodz -3 -2
+Poznan -10 1
+Wroclaw -9 -4
+Katowice -4 -7
+Krakow -1 -8
+Rzeszow 3 -8
+Edges:
+Warszawa Bialystok
+Warszawa Gdansk
+Warszawa Lodz
+Warszawa Bydgoszcz
+Warszawa Krakow
+Lodz Wroclaw
+Lodz Katowice
+Poznan Szczecin
+Poznan Bydgoszcz
+Poznan Wroclaw
+Gdansk Bialystok
+Gdansk Kolobrzeg
+Bialystok Rzeszow
+Krakow Rzeszow
+Krakow Katowice
+Katowice Wroclaw
+Szczecin Kolobrzeg
+Kolobrzeg Bydgoszcz

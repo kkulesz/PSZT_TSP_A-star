@@ -259,11 +259,24 @@ class Graph:
     def drawGraph(self):
         x_coords = list()
         y_coords = list()
+        path_x_coords = list()
+        path_y_coords = list()
+        plt.figure("Graph")
         for vertex in self.__vertexes:
             x_coords.append(vertex.getX())
             y_coords.append(vertex.getY())
-        plt.scatter(x_coords, y_coords)
-        plt.show()
+            for ID in self.__adjencyList[vertex.getID()]:
+                node = self.getNodeFromID(ID)
+                path_x_coords.append(vertex.getX())
+                path_y_coords.append(vertex.getY())
+                path_x_coords.append(node.getX())
+                path_y_coords.append(node.getY())
+                plt.plot(path_x_coords, path_y_coords, color='Blue')
+                path_y_coords.clear()
+                path_x_coords.clear()
+        
+        plt.scatter(x_coords, y_coords, color='Red')       
+        #plt.show()
 
     def drawPaths(self, paths):
         x_coords = list()
@@ -280,7 +293,10 @@ class Graph:
                 node = self.getNodeFromID(ID)
                 path_x_coords.append(node.getX())
                 path_y_coords.append(node.getY())
-            plt.plot(path_x_coords, path_y_coords, label=path_data[1])
+            plt.plot(path_x_coords, path_y_coords, label=path_data[1], color='k')
+            for i in range(len(path_x_coords)):
+                if i != 0:
+                    plt.arrow(path_x_coords[i-1], path_y_coords[i-1], path_x_coords[i]-path_x_coords[i-1], path_y_coords[i]-path_y_coords[i-1],length_includes_head=True, head_width=0.5, head_length=0.5, fc='k', ec='k')
             plt.legend()
             plt.scatter(x_coords, y_coords)
             # i +=1
@@ -301,18 +317,18 @@ class Graph:
 
 def main():
     graph = Graph()
-    graph.loadDataFromFile("data.txt")
+    graph.loadDataFromFile("dataPOL.txt")
 
     brute_time = time.time()
-    dist_path_bruteForce = graph.TSP_brute_force("A")
+    dist_path_bruteForce = graph.TSP_brute_force("Warszawa")
     print("Brute force time : %s seconds" % (time.time() - brute_time))
 
     closest_first_time = time.time()
-    dist_path_closestFirst = graph.TSP_closest_first("A")
+    dist_path_closestFirst = graph.TSP_closest_first("Warszawa")
     print("Closest first time : %s seconds" % (time.time() - closest_first_time))
 
     A_star_time = time.time()
-    dist_path_A_star = graph.TSP_A_star("A")
+    dist_path_A_star = graph.TSP_A_star("Warszawa")
     print("A* time : %s seconds" % (time.time() - A_star_time))
 
     print("BruteForce  : " + str(dist_path_bruteForce))
