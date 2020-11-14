@@ -10,7 +10,11 @@ class Graph:
         # self.__vertexes = set()
         self.__vertexes = list()
         self.__adjacencyList = dict()
-        self.__vertexIDs = set()  # to make alghoritms a little bit faster
+
+        self.__vertexIDs = set()  # to make algorithms a little bit faster
+
+        self.__number_of_vertexes = 0 # to compare algorithms
+        self.__number_of_edges = 0
 
     class Node:
         def __init__(self, id, x, y):
@@ -54,6 +58,7 @@ class Graph:
             return
         self.__vertexes.append(node)
         self.__vertexIDs.add(vertexData[0])
+        self.__number_of_vertexes += 1
 
     def addEdge(self, edgeData):
         if edgeData[0] not in self.__adjacencyList:
@@ -70,10 +75,12 @@ class Graph:
         self.__adjacencyList[edgeData[0]].append(edgeData[1])
         self.__adjacencyList[edgeData[1]].append(edgeData[0])
 
+        self.__number_of_edges += 1
+
     def getNodeFromID(self, id):
-        for vertex in self.__vertexes:
-            if vertex == self.Node(id, float("inf"), float("inf")):
-                return vertex
+        for node in self.__vertexes:
+            if node == self.Node(id, float("inf"), float("inf")):
+                return node
         return None
 
     def loadDataFromFile(self, filename):
@@ -160,40 +167,32 @@ class Graph:
                     whole_distance += self.calcDistance(current_vertex, start_vertex)
                     return whole_distance, path
 
-    def TSP_A_star(self, start_id):
-        start = self.getNodeFromID(start_id)
+    def TSP_A_star(self, start_id, param):
+        if param != 1 and param != 2:
+            print("Invalid parameter")
+            return
+        start_vertex = self.getNodeFromID(start_id)
         path = list()
-        edges = list()
 
-        number_of_terminal_points = len(self.__adjacencyList[start_id]) - 1
+        number_of_terminal_points = len(self.__adjacencyList[start_id])*5
         best_tuple = (None, float("inf"))
 
-        for vertex_id in self.__vertexIDs:
-            vertex = self.getNodeFromID(vertex_id)
-            for neighbour_id in self.__adjacencyList[vertex_id]:
-                neighbour = self.getNodeFromID(neighbour_id)
-                distance = self.calcDistance(vertex, neighbour)
-                if (distance, neighbour_id, vertex_id) in edges:
-                    continue
-                edges.append((distance, vertex_id, neighbour_id))
-        edges.sort()
-        shortest_edges = edges[:len(self.__vertexIDs)]
-        shortest_distances_left = list()
-        for edge in shortest_edges:
-            shortest_distances_left.append(edge[0])
-        del shortest_edges
+        collection = self.getHeuristicCollection(param)
 
         pQueue = PriorityQueue()
         path.append(start_id)
         distance_so_far = 0
         # pQueue contains tuple of:
-        # priority ; path_so_far, array_of_shortest_distances_left ; sum_of_distance_so_far
-        pQueue.put((sum(shortest_distances_left), path, shortest_distances_left, distance_so_far))
+        # priority ; path_so_far, heuristic_collection ; sum_of_distance_so_far
+        if type(collection) is list:
+            pQueue.put((sum(collection), path, collection, distance_so_far))
+        elif type(collection) is dict:
+            pQueue.put((sum(collection.values()), path, collection, distance_so_far))
 
         while not pQueue.empty():
             tuple = pQueue.get()
             path = tuple[1]
-            shortest_distances_left = tuple[2]
+            collection_copy = tuple[2]
             distance_so_far = tuple[3]
 
             current_vertex_id = path[-1]
@@ -204,128 +203,76 @@ class Graph:
                 for neighbour_id in self.__adjacencyList[current_vertex_id]:
 
                     if neighbour_id in unvisited_vertexes:
-                        tmp_shortest_distances_left = shortest_distances_left.copy()
+                        tmp_collection_copy = collection_copy.copy()
                         tmp_path = path.copy()
                         tmp_path.append(neighbour_id)
                         neighbour_vertex = self.getNodeFromID(neighbour_id)
                         new_distance = self.calcDistance(current_vertex, neighbour_vertex)
-                        if new_distance in tmp_shortest_distances_left:
-                            shortest_distances_left.remove(new_distance)
-                        elif tmp_shortest_distances_left:
-                            del shortest_distances_left[-1]
-                        heuristic_value = sum(tmp_shortest_distances_left)
+                        heuristic_value = self.getHeuristicValueAndAmendCollectionState(tmp_collection_copy, neighbour_id, new_distance)
                         new_distance = distance_so_far + new_distance
                         priority = heuristic_value + new_distance
-                        new_tuple = (priority, tmp_path, tmp_shortest_distances_left, new_distance)
+                        new_tuple = (priority, tmp_path, tmp_collection_copy, new_distance)
                         pQueue.put(new_tuple)
             else:
-                first_vertex_id = path[0]
-                if first_vertex_id in self.__adjacencyList[current_vertex_id]:
+                if start_id in self.__adjacencyList[current_vertex_id]:
                     number_of_terminal_points -= 1
 
-
-                    first_vertex = self.getNodeFromID(first_vertex_id)
-                    new_distance = self.calcDistance(current_vertex, first_vertex)
+                    new_distance = self.calcDistance(current_vertex, start_vertex)
                     distance_so_far += new_distance
-                    path.append(first_vertex_id)
+                    path.append(start_id)
 
                     if distance_so_far < best_tuple[1]:
                         best_tuple = (path, distance_so_far)
-                    if number_of_terminal_points:
-                        break
-                    #return distance_so_far, path
-                else:  # we cannot come back, continue looking
-                    continue
-        return best_tuple[1], best_tuple[0]
-
-    def TSP_A_star2(self, start_id):
-        start = self.getNodeFromID(start_id)
-        path = list()
-        number_of_terminal_points = len(self.__adjacencyList[start_id]) - 1
-        best_tuple = (None, float("inf"))
-
-        shortest_distances_dict = dict()
-        for vertex_id in self.__vertexIDs:
-            vertex_node = self.getNodeFromID(vertex_id)
-            min = float("inf")
-            for neighbour_id in self.__adjacencyList[vertex_id]:
-                neighbour_node = self.getNodeFromID(neighbour_id)
-                distance = self.calcDistance(vertex_node, neighbour_node)
-                if min > distance:
-                    min = distance
-                shortest_distances_dict[vertex_id] = min
-
-        pQueue = PriorityQueue()
-        path.append(start_id)
-        distance_so_far = 0
-        # pQueue contains tuple of:
-        # priority ; path_so_far, dict_of_shortest_distances_left ; sum_of_distance_so_far
-        pQueue.put((sum(shortest_distances_dict.values()), path, shortest_distances_dict, distance_so_far))
-
-        while not pQueue.empty():
-            tuple = pQueue.get()
-            path = tuple[1]
-            shortest_distances_left_dict = tuple[2]
-            distance_so_far = tuple[3]
-
-            current_vertex_id = path[-1]
-            current_vertex = self.getNodeFromID(current_vertex_id)
-
-            unvisited_vertexes = self.__vertexIDs - set(path)
-            if unvisited_vertexes:
-                for neighbour_id in self.__adjacencyList[current_vertex_id]:
-
-                    if neighbour_id in unvisited_vertexes:
-                        tmp_shortest_distances_left_dict = shortest_distances_left_dict.copy()
-                        tmp_path = path.copy()
-                        tmp_path.append(neighbour_id)
-                        neighbour_vertex = self.getNodeFromID(neighbour_id)
-                        new_distance = self.calcDistance(current_vertex, neighbour_vertex)
-                        if neighbour_id in tmp_shortest_distances_left_dict:
-                            del tmp_shortest_distances_left_dict[neighbour_id]
-                        heuristic_value = sum(tmp_shortest_distances_left_dict.values())
-                        new_distance = distance_so_far + new_distance
-                        priority = heuristic_value + new_distance
-                        new_tuple = (priority, tmp_path, tmp_shortest_distances_left_dict, new_distance)
-                        pQueue.put(new_tuple)
-            else:
-                first_vertex_id = path[0]
-                if first_vertex_id in self.__adjacencyList[current_vertex_id]:
-                    number_of_terminal_points -= 1
-
-                    first_vertex = self.getNodeFromID(first_vertex_id)
-                    new_distance = self.calcDistance(current_vertex, first_vertex)
-                    distance_so_far += new_distance
-                    path.append(first_vertex_id)
-
-                    if distance_so_far < best_tuple[1]:
-                        best_tuple = (path, distance_so_far)
-                    if number_of_terminal_points:
+                    if number_of_terminal_points == 0:
                         break
                 else:  # we cannot come back, continue looking
                     continue
         return best_tuple[1], best_tuple[0]
-        print("cos nie pyklo")
-    # heuristic function, for each vertex we will count MST value
-    '''
-    def countKruskalsMinimumSpanningTree(self, unvisited_vertexes):
-        edgesList = list()
-        for vertex_id in unvisited_vertexes:
-            vertex = self.getNodeFromID(vertex_id)
-            for neighbour_id in self.__adjencyList(vertex_id):
-                if neighbour_id not in unvisited_vertexes:
-                    continue
-                neighbour = self.getNodeFromID(neighbour_id)
-                distance = self.calcDistance(vertex, neighbour)
-                if (distance, vertex_id, neighbour_id) in edgesList or ((distance, vertex_id, neighbour_id) in edgesList):
-                    continue
-                edgesList.append( ( distance, vertex_id, neighbour_id) )
-        edgesList.sort(reverse=True)
-        MST_value = 0
-        while unvisited_vertexes or edgesList:
-            tuple = edgesList.pop()
-            #tutaj trzeba ogarnac dodawanie tak zeby nie tworzyly cyklu
-    '''
+
+    def getHeuristicCollection(self, param):
+        if param == 1:  # just shortest edges in graph
+            edges = list()
+            for vertex_id in self.__vertexIDs:
+                vertex = self.getNodeFromID(vertex_id)
+                for neighbour_id in self.__adjacencyList[vertex_id]:
+                    neighbour = self.getNodeFromID(neighbour_id)
+                    distance = self.calcDistance(vertex, neighbour)
+                    if (distance, neighbour_id, vertex_id) in edges:
+                        continue
+                    edges.append((distance, vertex_id, neighbour_id))
+            edges.sort()
+            shortest_edges = edges[:len(self.__vertexIDs)]
+            shortest_distances_left = list()
+            for edge in shortest_edges:
+                shortest_distances_left.append(edge[0])
+            del shortest_edges
+            return shortest_distances_left
+        elif param == 2:  # shortest edge of each vertex
+            shortest_distances_dict = dict()
+            for vertex_id in self.__vertexIDs:
+                vertex_node = self.getNodeFromID(vertex_id)
+                min = float("inf")
+                for neighbour_id in self.__adjacencyList[vertex_id]:
+                    neighbour_node = self.getNodeFromID(neighbour_id)
+                    distance = self.calcDistance(vertex_node, neighbour_node)
+                    if min > distance:
+                        min = distance
+                    shortest_distances_dict[vertex_id] = min
+            return shortest_distances_dict
+        return None
+
+    def getHeuristicValueAndAmendCollectionState(self, collection, vertex_id, distance):
+        if type(collection) is list:
+            if distance in collection:
+                collection.remove(distance)
+            elif collection:
+                del collection[-1]
+            return sum(collection)
+        elif type(collection) is dict:
+            if vertex_id in collection:
+                del collection[vertex_id]
+            return sum(collection.values())
+        return None
 
     def calcDistance(self, src, dest):
         #   sqrt( (x1-x2)^2 + (y1-y2)^2 )
@@ -387,11 +334,15 @@ class Graph:
                 print(dest, end=' ')
             print()
 
+    def printGraphData(self):
+        density_percentage = (2*self.__number_of_edges)/((self.__number_of_vertexes-1)*self.__number_of_vertexes) * 100
+        print("Number of vertexes: {}\tGraph density: {}%".format(self.__number_of_vertexes, density_percentage))
+
 
 def main():
     graph = Graph()
-    graph.loadDataFromFile("dataPOL.txt")
-    first_vertex = "Warszawa"
+    graph.loadDataFromFile("data_graphs/data.txt")
+    first_vertex = "A"
     brute_time = time.time()
     dist_path_bruteForce = graph.TSP_brute_force(first_vertex)
     print("Brute force time:   %s seconds" % (time.time() - brute_time))
@@ -401,19 +352,21 @@ def main():
     print("Closest first time: %s seconds" % (time.time() - closest_first_time))
 
     A_star_time = time.time()
-    dist_path_A_star = graph.TSP_A_star(first_vertex)
+    dist_path_A_star = graph.TSP_A_star(first_vertex, 1)
     print("A* time:            %s seconds" % (time.time() - A_star_time))
 
     A_star_time2 = time.time()
-    dist_path_A_star2 = graph.TSP_A_star2(first_vertex)
+    dist_path_A_star2 = graph.TSP_A_star(first_vertex, 2)
     print("A*2 time:           %s seconds" % (time.time() - A_star_time2))
 
     print("BruteForce  : " + str(dist_path_bruteForce))
     print("ClosestFirst: " + str(dist_path_closestFirst))
     print("A_star      : " + str(dist_path_A_star))
     print("A_star2     : " + str(dist_path_A_star2))
-    paths = list()
 
+    graph.printGraphData()
+
+    paths = list()
     paths.append((dist_path_bruteForce[1], "brute force"))
     paths.append((dist_path_closestFirst[1], "closest first"))
     paths.append((dist_path_A_star[1], "A_star"))
