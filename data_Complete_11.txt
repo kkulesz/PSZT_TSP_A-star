@@ -1,0 +1,67 @@
+A 0 0
+B 4 0
+C 1 2
+D 2 2
+E 4 2
+F 4 10
+G 1 5
+H 2 4
+I 7 15
+J -2 0
+K 5 5
+Edges:
+A B
+A C
+A D
+A E
+A F
+A G
+A H
+A I
+A J
+A K
+B C
+B D
+B E
+B F
+B G
+B H
+B I
+B J
+B K
+C D
+C E
+C F
+C G
+C H
+C I
+C J
+C K
+D E
+D F
+D G
+D H
+D I
+D J
+D K
+E F
+E G
+E H
+E I
+E J
+E K
+F G
+F H
+F I
+F J
+F K
+G H
+G I
+G J
+G K
+H I
+H J
+H K
+I J
+I K
+J K
