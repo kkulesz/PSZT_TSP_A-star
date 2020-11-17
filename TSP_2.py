@@ -174,7 +174,8 @@ class Graph:
         start_vertex = self.getNodeFromID(start_id)
         path = list()
 
-        number_of_terminal_points = len(self.__adjacencyList[start_id])*5
+        # number of terminal points depends on graph density
+        number_of_terminal_points = len(self.__adjacencyList[start_id]) * (self.__number_of_edges)
         best_tuple = (None, float("inf"))
 
         collection = self.getHeuristicCollection(param)
