@@ -1,5 +1,6 @@
 import math
 import time
+import sys
 from queue import PriorityQueue
 
 import matplotlib.pyplot as plt
@@ -13,7 +14,7 @@ class Graph:
 
         self.__vertexIDs = set()  # to make algorithms a little bit faster
 
-        self.__number_of_vertexes = 0 # to compare algorithms
+        self.__number_of_vertexes = 0  # to compare algorithms
         self.__number_of_edges = 0
 
     class Node:
@@ -209,7 +210,8 @@ class Graph:
                         tmp_path.append(neighbour_id)
                         neighbour_vertex = self.getNodeFromID(neighbour_id)
                         new_distance = self.calcDistance(current_vertex, neighbour_vertex)
-                        heuristic_value = self.getHeuristicValueAndAmendCollectionState(tmp_collection_copy, neighbour_id, new_distance)
+                        heuristic_value = self.getHeuristicValueAndAmendCollectionState(tmp_collection_copy,
+                                                                                        neighbour_id, new_distance)
                         new_distance = distance_so_far + new_distance
                         priority = heuristic_value + new_distance
                         new_tuple = (priority, tmp_path, tmp_collection_copy, new_distance)
@@ -297,9 +299,9 @@ class Graph:
                 plt.plot(path_x_coords, path_y_coords, color='Blue')
                 path_y_coords.clear()
                 path_x_coords.clear()
-        
-        plt.scatter(x_coords, y_coords, color='Red')       
-        #plt.show()
+
+        plt.scatter(x_coords, y_coords, color='Red')
+        # plt.show()
 
     def drawPaths(self, paths):
         x_coords = list()
@@ -318,7 +320,9 @@ class Graph:
             plt.plot(path_x_coords, path_y_coords, label=path_data[1], color='k')
             for i in range(len(path_x_coords)):
                 if i != 0:
-                    plt.arrow(path_x_coords[i-1], path_y_coords[i-1], path_x_coords[i]-path_x_coords[i-1], path_y_coords[i]-path_y_coords[i-1],length_includes_head=True, head_width=0.5, head_length=0.5, fc='k', ec='k')
+                    plt.arrow(path_x_coords[i - 1], path_y_coords[i - 1], path_x_coords[i] - path_x_coords[i - 1],
+                              path_y_coords[i] - path_y_coords[i - 1], length_includes_head=True, head_width=0.5,
+                              head_length=0.5, fc='k', ec='k')
             plt.legend()
             plt.scatter(x_coords, y_coords)
 
@@ -336,13 +340,17 @@ class Graph:
             print()
 
     def printGraphData(self):
-        density_percentage = (2*self.__number_of_edges)/((self.__number_of_vertexes-1)*self.__number_of_vertexes) * 100
+        density_percentage = (2 * self.__number_of_edges) / (
+                    (self.__number_of_vertexes - 1) * self.__number_of_vertexes) * 100
         print("Number of vertexes: {}\tGraph density: {}%".format(self.__number_of_vertexes, density_percentage))
 
 
 def main():
     graph = Graph()
-    graph.loadDataFromFile("data_graphs/data.txt")
+    graphData = sys.argv[1]
+    print(graphData)
+    graphData = "data_graphs/" + graphData + ".txt"
+    graph.loadDataFromFile(graphData)
     first_vertex = "A"
     brute_time = time.time()
     dist_path_bruteForce = graph.TSP_brute_force(first_vertex)
