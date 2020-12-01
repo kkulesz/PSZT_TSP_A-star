@@ -1,6 +1,7 @@
 import math
 import time
 import sys
+import os
 from queue import PriorityQueue
 
 import matplotlib.pyplot as plt
@@ -85,19 +86,23 @@ class Graph:
         return None
 
     def loadDataFromFile(self, filename):
-        fh = open(filename, "r")
-        lines = fh.read().splitlines()
+        if os.path.exists(filename):
+            fh = open(filename, "r")
+            lines = fh.read().splitlines()
 
-        # read vertices
-        first_line_of_edges = -1
-        for i in range(len(lines)):
-            if lines[i] == "Edges:":
-                first_line_of_edges = i + 1
-                break
-            self.addVertex(lines[i].split(' '))
-        # read edges
-        for i in range(first_line_of_edges, len(lines)):
-            self.addEdge(lines[i].split(' '))
+            # read vertices
+            first_line_of_edges = -1
+            for i in range(len(lines)):
+                if lines[i] == "Edges:":
+                    first_line_of_edges = i + 1
+                    break
+                self.addVertex(lines[i].split(' '))
+            # read edges
+            for i in range(first_line_of_edges, len(lines)):
+                self.addEdge(lines[i].split(' '))
+        else:
+            print("Nie udalo sie odnalezc pliku")
+            exit()
 
     def TSP_brute_force(self, start_id):
         start = self.getNodeFromID(start_id)
@@ -347,8 +352,10 @@ class Graph:
 
 def main():
     graph = Graph()
-    graphData = sys.argv[1]
-    print(graphData)
+    if len(sys.argv) != 2:
+        graphData = input("Podaj nazwe pliku (bez rozszerzenia):\n")
+    else:
+        graphData = sys.argv[1]
     graphData = "data_graphs/" + graphData + ".txt"
     graph.loadDataFromFile(graphData)
     first_vertex = "A"
